@@ -29,9 +29,15 @@
         max-width: 800px;
       }
 
+      main {
+        margin-top: 1rem;
+      }
+
       h1,
       h2 {
-        text-align: center;
+        /* text-align: center; */
+        margin-top: 0.5rem;
+        width: 100%;
       }
 
       table {
@@ -74,16 +80,32 @@
       .btn-small {
         font-size: 0.9rem;
         padding: 0.5rem;
-        background-color: #ea5455;
+        background-color: #213555;
+        cursor: pointer;
         border-radius: 6px;
       }
 
       .btn-small:hover {
-        background-color: #b23230;
+        background-color: #213555;
       }
 
       .hidden {
-        display: none;
+        display: none !important;
+      }
+      .sumInfo {
+        margin-top: 1rem;
+      }
+      .phase {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      p {
+        line-height: 1.5rem;
+        width: 100%;
       }
 
       @media (max-width: 500px) {
@@ -104,19 +126,22 @@
 
       <!-- Fáze 0 – Úvod -->
       <div id="phase0">
-        <h2>Vítej!</h2>
+        <h2>Vítej v Diecézní YesManu!</h2>
         <p>
-          Tato hra tě provede dvěma fázemi. Nejdříve zadáš jména a věky
-          účastníků tak, aby jejich věk dohromady dával přesně 210. Poté budeš
-          plnit úkoly.
+          Jak to funguje? Postupně <strong>dostaneš několik úkolů</strong>,
+          které pokusíš splnit. Pokud to zvládneš, zobrazí se ti nakonec
+          animace, díky které můžeš získat svou odměnu. Podrobnější instrukce
+          o&nbsp;odměně získáš až po úspěšném splnění všech úkolů.
         </p>
+        <p><strong>A pamatuj, vyhrát může opravdu každý.</strong></p>
         <p>Jsi připravený/á?</p>
         <button class="btn" onclick="goToPhase1()">✅ Jdu na to!</button>
       </div>
 
       <!-- Fáze 1 -->
-      <div id="phase1" class="hidden">
-        <h2>Fáze 1 – Zadej jména a věk (celkem 210)</h2>
+      <div id="phase1" class="hidden phase">
+        <h2>První úkol</h2>
+        <p>Seznam se s&nbsp;lidmi, jejich věk v&nbsp;součtu dá číslo 210.</p>
         <table id="table1">
           <thead>
             <tr>
@@ -127,52 +152,68 @@
           </thead>
           <tbody></tbody>
         </table>
-        <button class="btn" onclick="addRowPhase1()">➕ Přidat řádek</button>
-        <div>
+        <button class="btn" onclick="addRowPhase1()">Přidat známého</button>
+        <div class="sumInfo">
           Součet věku: <strong><span id="ageSum">0</span> / 210</strong>
         </div>
         <button id="toPhase2Btn" class="btn hidden" onclick="goToPhase2()">
-          ➡️ Přejít do 2. fáze
+          ➡️ Přejít na další úkol
         </button>
       </div>
 
       <!-- Fáze 2 -->
-      <div id="phase2" class="hidden">
-        <h2>Fáze 2 – Splň úkoly a napiš s kým</h2>
+      <div id="phase2" class="hidden phase">
+        <h2>Druhý úkol</h2>
+        <p>
+          V&nbsp;druhé fázi musíš splnit následujících pět úkolů, každý
+          s&nbsp;někým jiným.
+        </p>
         <table id="table2">
           <thead>
             <tr>
               <th>Úkol</th>
-              <th>Splněno s kým</th>
+              <th>S kým splněno</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Postav věž z kostek</td>
+              <td>Upřímně někomu říct, že mu to sluší</td>
               <td><input /></td>
             </tr>
             <tr>
-              <td>Zazpívej píseň</td>
+              <td>
+                Poznat někoho z&nbsp;vikariátu, který sousedí s&nbsp;tím tvým
+              </td>
               <td><input /></td>
             </tr>
             <tr>
-              <td>Vymysli básničku</td>
+              <td>ZaHrát si s&nbsp;někým Čing ČonG</td>
               <td><input /></td>
             </tr>
             <tr>
-              <td>Nakresli obrázek</td>
+              <td>Najít někoho, kdo letos pojede do Říma</td>
+              <td><input /></td>
+            </tr>
+            <tr>
+              <td>Popovídat si s&nbsp;někým v&nbsp;cizím jazyce</td>
               <td><input /></td>
             </tr>
           </tbody>
         </table>
         <button id="showResultBtn" class="btn hidden" onclick="showResult()">
-          🎉 Zobrazit výsledek
+          Chci jít dál
         </button>
       </div>
 
       <!-- Výsledek -->
-      <div id="result" class="hidden">
-        <h2>🎉 Hotovo! Dobrá práce!</h2>
+      <div id="result" class="hidden phase">
+        <h2>🎉 Hotovo, dobrá práce!</h2>
+        <p>
+          Gratulujeme, ač je to možná nečekané, splnil jsi všechny úkoly
+          a&nbsp;vyhrál jsi letošního diecézního YesMana! Nyní máš možnost si
+          zajít pro svoji odměnu do Minutového nealko baru, kde se prokážeš
+          následující animací.
+        </p>
       </div>
     </main>
 
@@ -214,7 +255,7 @@
           const row = table1Body.insertRow();
           row.innerHTML = `
             <td><input value="${name}" oninput="updateRow(${i}, 'name', this.value)"></td>
-            <td><input type="number" value="${age}" oninput="updateRow(${i}, 'age', this.value)"></td>
+            <td><input type="number" value="${age}" oninput="updateRow(${i}, 'age', this.value)" min="1" max="65"></td>
             <td><button class="btn-small" onclick="removeRow(${i})">🗑️</button></td>
           `;
         });
