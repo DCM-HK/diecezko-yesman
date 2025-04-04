@@ -102,7 +102,20 @@
     <main>
       <h1>Diecézní YesMan</h1>
 
-      <div id="phase1">
+      <!-- Fáze 0 – Úvod -->
+      <div id="phase0">
+        <h2>Vítej!</h2>
+        <p>
+          Tato hra tě provede dvěma fázemi. Nejdříve zadáš jména a věky
+          účastníků tak, aby jejich věk dohromady dával přesně 210. Poté budeš
+          plnit úkoly.
+        </p>
+        <p>Jsi připravený/á?</p>
+        <button class="btn" onclick="goToPhase1()">✅ Jdu na to!</button>
+      </div>
+
+      <!-- Fáze 1 -->
+      <div id="phase1" class="hidden">
         <h2>Fáze 1 – Zadej jména a věk (celkem 210)</h2>
         <table id="table1">
           <thead>
@@ -123,6 +136,7 @@
         </button>
       </div>
 
+      <!-- Fáze 2 -->
       <div id="phase2" class="hidden">
         <h2>Fáze 2 – Splň úkoly a napiš s kým</h2>
         <table id="table2">
@@ -156,12 +170,14 @@
         </button>
       </div>
 
+      <!-- Výsledek -->
       <div id="result" class="hidden">
         <h2>🎉 Hotovo! Dobrá práce!</h2>
       </div>
     </main>
 
     <script>
+      const phase0Div = document.getElementById("phase0");
       const phase1Div = document.getElementById("phase1");
       const phase2Div = document.getElementById("phase2");
       const resultDiv = document.getElementById("result");
@@ -170,17 +186,26 @@
       const toPhase2Btn = document.getElementById("toPhase2Btn");
       const showResultBtn = document.getElementById("showResultBtn");
 
-      const savedPhase = localStorage.getItem("phase") || "1";
+      const savedPhase = localStorage.getItem("phase") || "0";
       const savedTable1 = JSON.parse(localStorage.getItem("table1") || "[]");
       const savedTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
 
-      if (savedPhase === "2") {
-        phase1Div.classList.add("hidden");
-        phase2Div.classList.remove("hidden");
-      } else if (savedPhase === "done") {
-        phase1Div.classList.add("hidden");
-        phase2Div.classList.add("hidden");
-        resultDiv.classList.remove("hidden");
+      function showPhase(phase) {
+        [phase0Div, phase1Div, phase2Div, resultDiv].forEach((div) =>
+          div.classList.add("hidden")
+        );
+        if (phase === "0") phase0Div.classList.remove("hidden");
+        else if (phase === "1") phase1Div.classList.remove("hidden");
+        else if (phase === "2") phase2Div.classList.remove("hidden");
+        else if (phase === "done") resultDiv.classList.remove("hidden");
+      }
+
+      showPhase(savedPhase);
+
+      function goToPhase1() {
+        localStorage.setItem("phase", "1");
+        showPhase("1");
+        renderTable1();
       }
 
       function renderTable1() {
@@ -188,10 +213,10 @@
         savedTable1.forEach(({ name, age }, i) => {
           const row = table1Body.insertRow();
           row.innerHTML = `
-        <td><input value="${name}" oninput="updateRow(${i}, 'name', this.value)"></td>
-        <td><input type="number" value="${age}" oninput="updateRow(${i}, 'age', this.value)"></td>
-        <td><button class="btn-small" onclick="removeRow(${i})">🗑️</button></td>
-      `;
+            <td><input value="${name}" oninput="updateRow(${i}, 'name', this.value)"></td>
+            <td><input type="number" value="${age}" oninput="updateRow(${i}, 'age', this.value)"></td>
+            <td><button class="btn-small" onclick="removeRow(${i})">🗑️</button></td>
+          `;
         });
         updateAgeSum();
       }
@@ -227,7 +252,7 @@
 
       function goToPhase2() {
         localStorage.setItem("phase", "2");
-        location.reload();
+        showPhase("2");
       }
 
       renderTable1();
@@ -253,7 +278,7 @@
 
       function showResult() {
         localStorage.setItem("phase", "done");
-        location.reload();
+        showPhase("done");
       }
     </script>
   </body>
