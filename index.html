@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Diecézní YesMan</title>
+    <style>
+      html,
+      body {
+        scroll-behavior: smooth;
+        margin: 0;
+        padding: 0;
+        background: #f5efe7;
+        color: #213555;
+        font-family: "Roboto", Arial, sans-serif;
+        font-size: 1.1rem;
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        touch-action: manipulation;
+      }
+
+      header,
+      main,
+      footer {
+        width: 90vw;
+        max-width: 800px;
+      }
+
+      h1,
+      h2 {
+        text-align: center;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+      }
+
+      th,
+      td {
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+      }
+
+      input {
+        width: 100%;
+        padding: 0.4rem;
+        box-sizing: border-box;
+        font-size: 1rem;
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        background-color: #4f709c;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 1rem;
+        transition: background-color 0.3s ease;
+        width: 100%;
+        max-width: 300px;
+      }
+
+      .btn:hover {
+        background-color: #213555;
+      }
+
+      .btn-small {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+        background-color: #ea5455;
+        border-radius: 6px;
+      }
+
+      .btn-small:hover {
+        background-color: #b23230;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 500px) {
+        th,
+        td {
+          font-size: 0.9rem;
+        }
+
+        .btn {
+          font-size: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Diecézní YesMan</h1>
+
+      <div id="phase1">
+        <h2>Fáze 1 – Zadej jména a věk (celkem 210)</h2>
+        <table id="table1">
+          <thead>
+            <tr>
+              <th>Jméno</th>
+              <th>Věk</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <button class="btn" onclick="addRowPhase1()">➕ Přidat řádek</button>
+        <div>
+          Součet věku: <strong><span id="ageSum">0</span> / 210</strong>
+        </div>
+        <button id="toPhase2Btn" class="btn hidden" onclick="goToPhase2()">
+          ➡️ Přejít do 2. fáze
+        </button>
+      </div>
+
+      <div id="phase2" class="hidden">
+        <h2>Fáze 2 – Splň úkoly a napiš s kým</h2>
+        <table id="table2">
+          <thead>
+            <tr>
+              <th>Úkol</th>
+              <th>Splněno s kým</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Postav věž z kostek</td>
+              <td><input /></td>
+            </tr>
+            <tr>
+              <td>Zazpívej píseň</td>
+              <td><input /></td>
+            </tr>
+            <tr>
+              <td>Vymysli básničku</td>
+              <td><input /></td>
+            </tr>
+            <tr>
+              <td>Nakresli obrázek</td>
+              <td><input /></td>
+            </tr>
+          </tbody>
+        </table>
+        <button id="showResultBtn" class="btn hidden" onclick="showResult()">
+          🎉 Zobrazit výsledek
+        </button>
+      </div>
+
+      <div id="result" class="hidden">
+        <h2>🎉 Hotovo! Dobrá práce!</h2>
+      </div>
+    </main>
+
+    <script>
+      const phase1Div = document.getElementById("phase1");
+      const phase2Div = document.getElementById("phase2");
+      const resultDiv = document.getElementById("result");
+      const ageSumEl = document.getElementById("ageSum");
+      const table1Body = document.querySelector("#table1 tbody");
+      const toPhase2Btn = document.getElementById("toPhase2Btn");
+      const showResultBtn = document.getElementById("showResultBtn");
+
+      const savedPhase = localStorage.getItem("phase") || "1";
+      const savedTable1 = JSON.parse(localStorage.getItem("table1") || "[]");
+      const savedTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+
+      if (savedPhase === "2") {
+        phase1Div.classList.add("hidden");
+        phase2Div.classList.remove("hidden");
+      } else if (savedPhase === "done") {
+        phase1Div.classList.add("hidden");
+        phase2Div.classList.add("hidden");
+        resultDiv.classList.remove("hidden");
+      }
+
+      function renderTable1() {
+        table1Body.innerHTML = "";
+        savedTable1.forEach(({ name, age }, i) => {
+          const row = table1Body.insertRow();
+          row.innerHTML = `
+        <td><input value="${name}" oninput="updateRow(${i}, 'name', this.value)"></td>
+        <td><input type="number" value="${age}" oninput="updateRow(${i}, 'age', this.value)"></td>
+        <td><button class="btn-small" onclick="removeRow(${i})">🗑️</button></td>
+      `;
+        });
+        updateAgeSum();
+      }
+
+      function addRowPhase1() {
+        savedTable1.push({ name: "", age: 0 });
+        saveTable1();
+        renderTable1();
+      }
+
+      function removeRow(i) {
+        savedTable1.splice(i, 1);
+        saveTable1();
+        renderTable1();
+      }
+
+      function updateRow(i, key, value) {
+        if (key === "age") value = parseInt(value) || 0;
+        savedTable1[i][key] = value;
+        saveTable1();
+        updateAgeSum();
+      }
+
+      function updateAgeSum() {
+        const sum = savedTable1.reduce((s, r) => s + (parseInt(r.age) || 0), 0);
+        ageSumEl.textContent = sum;
+        toPhase2Btn.classList.toggle("hidden", sum !== 210);
+      }
+
+      function saveTable1() {
+        localStorage.setItem("table1", JSON.stringify(savedTable1));
+      }
+
+      function goToPhase2() {
+        localStorage.setItem("phase", "2");
+        location.reload();
+      }
+
+      renderTable1();
+
+      const inputs = document.querySelectorAll("#table2 input");
+      inputs.forEach((input, i) => {
+        input.value = savedTasks[i] || "";
+        input.addEventListener("input", () => {
+          savedTasks[i] = input.value;
+          localStorage.setItem("tasks", JSON.stringify(savedTasks));
+          checkTasksComplete();
+        });
+      });
+
+      function checkTasksComplete() {
+        const complete = [...inputs].every(
+          (input) => input.value.trim() !== ""
+        );
+        showResultBtn.classList.toggle("hidden", !complete);
+      }
+
+      checkTasksComplete();
+
+      function showResult() {
+        localStorage.setItem("phase", "done");
+        location.reload();
+      }
+    </script>
+  </body>
+</html>
